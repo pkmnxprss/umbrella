@@ -1,0 +1,10 @@
+from django.forms import ModelForm
+from .models import Post
+
+
+class PostForm(ModelForm):
+    class Meta:
+        model = Post
+        fields = ['group', 'text', 'image']
+        # Включение всех полей в форму:
+        # fields = '__all__'
