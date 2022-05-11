@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Post, Group, User
-from .forms import PostForm
+from .models import Post, Group, User, Comment
+from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 
 
@@ -52,9 +52,15 @@ def post_view(request, username, post_id):
     posts_count = posts.count()
     post = Post.objects.get(id=post_id)
 
+    comments = Comment.objects.filter(post=post)
+
+    form = CommentForm()
+
     return render(request, 'post.html', {'profile_user': profile_user,
                                          'posts_count': posts_count,
-                                         'post': post})
+                                         'post': post,
+                                         'items': comments,
+                                         'form': form})
 
 
 @login_required()
@@ -79,6 +85,7 @@ def post_edit(request, username, post_id):
     post = get_object_or_404(Post, pk=post_id, author=user_profile)
     if request.user != user_profile:
         return redirect('post', username=username, post_id=post_id)
+
     form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
 
     if request.method == 'POST':
@@ -89,6 +96,21 @@ def post_edit(request, username, post_id):
     return render(
         request, 'post_new.html', {'form': form, 'post': post, 'edit': True},
     )
+
+
+# view-функция для обработки отправленного комментария (POST)
+def add_comment(request, username, post_id):
+    post_owner = get_object_or_404(User, username=username)
+    post = get_object_or_404(Post, pk=post_id, author=post_owner)
+
+    # По идее всегда POST
+    form = CommentForm(request.POST or None)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.author = request.user
+        comment.save()
+    return redirect('post', username=username, post_id=post_id)
 
 
 def page_not_found(request, exception):
