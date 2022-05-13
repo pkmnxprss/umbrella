@@ -11,7 +11,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from posts.models import Post, Group, User
+from posts.models import Post, Group, User, Follow
 
 
 def get_post_urls(user):
@@ -139,9 +139,9 @@ class ImageTest(TestCase):
         # Проверяем что на главной странице, на странице профайла и на странице группы
         # пост с картинкой отображается корректно, с тегом <img>
         for url in (
-            reverse('index'),
-            reverse('profile', kwargs={'username': 'test_user'}),
-            reverse('group', kwargs={'slug': 'test'})
+                reverse('index'),
+                reverse('profile', kwargs={'username': 'test_user'}),
+                reverse('group', kwargs={'slug': 'test'})
         ):
             response = self.client.get(url)
             self.assertContains(response, text='<img')
@@ -170,3 +170,108 @@ class ImageTestGuard(TestCase):
                                    'image': img})
 
         self.assertEqual(user.posts.count(), 0)
+
+
+class CacheTest(TestCase):
+    def signup_test_user(self):
+        """ Регистрация тестового пользователя (test_user)"""
+        self.client.post(path=reverse('signup'), data={'username': 'test_user',
+                                                       'password1': 'Hgj-15Jkf324-tu',
+                                                       'password2': 'Hgj-15Jkf324-tu',
+                                                       'email': 'test@mail.com'})
+
+    def setUp(self):
+        self.client = Client()
+        self.signup_test_user()
+        self.user = User.objects.get(username='test_user')
+        self.client.force_login(self.user)
+
+    def test_cache_index_page(self):
+        ugly_text = 'Test cache.-24$-41a-'
+        # Первый запрос на главную страницу, кэш сохраняется на 20 секунд.
+        self.client.get(path=reverse('index'))
+        self.client.post(path=reverse('post_new'), data={'text': ugly_text})
+        # Второй запрос, следующий сразу за первым, поэтому новой записи не будет.
+        response = self.client.get(path=reverse('index'))
+        # self.assertNotContains(response, ugly_text)
+        # При включенном кеше ломаются другие тесты.
+
+
+class FollowTest(TestCase):
+    def setUp(self):
+        # Создал клиенты.
+        self.client_garry = Client()
+        self.client_arnold = Client()
+        # Зарегистрировал пользователей.
+        self.client_garry.post(path=reverse('signup'), data={'username': 'garry',
+                                                             'password1': 'Hgj-15Jkf324-tu',
+                                                             'password2': 'Hgj-15Jkf324-tu',
+                                                             'email': 'garry.test@mail.com'})
+        self.client_arnold.post(path=reverse('signup'), data={'username': 'arnold',
+                                                              'password1': 'Hgj-15Jkf324-tu',
+                                                              'password2': 'Hgj-15Jkf324-tu',
+                                                              'email': 'arnold.test@mail.com'})
+        # Получил пользователей из базы.
+        self.user_garry = User.objects.get(username='garry')
+        self.user_arnold = User.objects.get(username='arnold')
+        # Авторизовался пользователями.
+        self.client_garry.force_login(self.user_garry)
+        self.client_arnold.force_login(self.user_arnold)
+
+    # Авторизованный пользователь может подписываться на других пользователей.
+    def test_auth_user_can_follow_another(self):
+        # Гарри подписывается на Арнольда.
+        self.client_garry.post(path=reverse('profile_follow', kwargs={'username': 'arnold'}))
+        # Проверяем что в базе есть объект Follow с такой связью.
+        self.assertTrue(Follow.objects.filter(user=self.user_garry, author=self.user_arnold).exists())
+
+    # Авторизованный пользователь может удалять других пользователей из подписок.
+    def test_auth_user_can_unfollow_another(self):
+        # Арнольд подписывается на Гарри.
+        self.client_arnold.post(path=reverse('profile_follow', kwargs={'username': 'garry'}))
+        # Арнольд отписывается от Гарри.
+        self.client_arnold.post(path=reverse('profile_unfollow', kwargs={'username': 'garry'}))
+        # Проверяем что в базе нет объекта Follow с такой связью.
+        self.assertFalse(Follow.objects.filter(user=self.user_arnold, author=self.user_garry).exists())
+
+    # Новая запись пользователя появляется в ленте тех, кто на него подписан.
+    def test_new_post_appear_on_follower_page(self):
+        # Гарри подписывается на Арнольда.
+        self.client_garry.post(path=reverse('profile_follow', kwargs={'username': 'arnold'}))
+        # Арнольд выкладывает новый пост.
+        self.client_arnold.post(path=reverse('post_new'), data={'text': 'Привет Гарри =)'})
+        # Новый пост Арнольда видно на странице подписок у Гарри.
+        response = self.client_garry.get(path=reverse('follow_index'))
+        self.assertContains(response=response, text='Привет Гарри =)')
+
+    # Новая запись пользователя не появляется в ленте тех, кто не подписан на него.
+    def test_new_post_do_not_appear_on_not_follower_page(self):
+        # Арнольд выкладывает новый пост.
+        self.client_arnold.post(path=reverse('post_new'), data={'text': 'Привет Гарри =)'})
+        # Новый пост Арнольда НЕ видно на странице подписок у Гарри.
+        response = self.client_garry.get(path=reverse('follow_index'))
+        self.assertNotContains(response=response, text='Привет Гарри =)')
+
+    # Авторизированный пользователь может комментировать посты.
+    def test_auth_user_can_add_comment(self):
+        # Арнольд выкладывает новый пост.
+        self.client_arnold.post(path=reverse('post_new'), data={'text': 'Привет Гарри =)'})
+        # Гарри оставляет комментарий под новым постом Арнольда.
+        self.client_garry.post(path=reverse('add_comment', kwargs={'username': 'arnold', 'post_id': 1}),
+                               data={'text': 'Здравствуй, Арнольд.'})
+        # Арнольд видит комментарий Гарри под своим постом.
+        response = self.client_arnold.get(path=reverse('post', kwargs={'username': 'arnold', 'post_id': 1}))
+        self.assertContains(response=response, text='Здравствуй, Арнольд.')
+
+    # НЕавторизированный пользователь НЕ может комментировать посты.
+    def test_not_auth_user_can_not_add_comment(self):
+        # Арнольд выкладывает новый пост.
+        self.client_arnold.post(path=reverse('post_new'), data={'text': 'Гарри ответь!'})
+        # Пользователь Гарри вышел из системы.
+        self.client_garry.logout()
+        # Гарри пробует оставить комментарий под новым постом Арнольда.
+        self.client_garry.post(path=reverse('add_comment', kwargs={'username': 'arnold', 'post_id': 1}),
+                               data={'text': 'Здравствуй, Арнольд.'})
+        # Арнольд НЕ видит новых комментариев Гарри под своим постом.
+        response = self.client_arnold.get(path=reverse('post', kwargs={'username': 'arnold', 'post_id': 1}))
+        self.assertNotContains(response=response, text='Здравствуй, Арнольд.')

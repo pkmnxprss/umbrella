@@ -45,3 +45,20 @@ class Comment(models.Model):
     # Реализовано или нет?
     class Meta:
         ordering = ['-created']
+
+    def __str__(self):
+        return f'Комментарий к посту {self.post} от {self.author}'
+
+
+class Follow(models.Model):
+    # Ссылка на объект пользователя, который подписывается.
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
+    # Ссылка на объект пользователя, на которого подписываются.
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+
+    class Meta:
+        # Создание уникальности связки, чтобы не было дублей.
+        unique_together = ['user', 'author']
+
+    def __str__(self):
+        return f'user: {self.user} -> author: {self.author}'

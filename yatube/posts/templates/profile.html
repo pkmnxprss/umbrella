@@ -35,11 +35,24 @@
                             Подписчиков: XXX <br />
                             Подписан: XXX
                         </div>
+                        {% if profile_user.username != request.user.username %}
+                            {% if following %}
+                                <a class="btn btn-lg btn-light"
+                                   href="{% url 'profile_unfollow' profile_user.username %}" role="button">
+                                    Отписаться
+                                </a>
+                            {% else %}
+                                <a class="btn btn-lg btn-primary"
+                                   href="{% url 'profile_follow' profile_user.username %}" role="button">
+                                    Подписаться
+                                </a>
+                            {% endif %}
+                        {% endif %}
                     </li>
                     <li class="list-group-item">
                         <div class="h6 text-muted">
                             <!-- Количество записей -->
-                            Записей: {{ posts_count }}
+                            Записей: {{ paginator.count }}
                         </div>
                     </li>
                 </ul>

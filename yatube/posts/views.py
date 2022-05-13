@@ -1,12 +1,14 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Post, Group, User, Comment
+from .models import Post, Group, User, Comment, Follow
 from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
 
 
 # Обратите внимание, что функция render возвращает специальный объект, который должна вернуть view-функция.
 # Частая ошибка — вызывать функцию, но не передать результат ее выполнения в операторе return
+# @cache_page(timeout=20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.order_by("-pub_date").all()
     paginator = Paginator(post_list, 10)  # показывать по 10 записей на странице.
@@ -34,16 +36,25 @@ def group_posts(request, slug):
 def profile(request, username):
     profile_user = get_object_or_404(User, username=username)  # Получаем объект <User> из запроса
     posts = Post.objects.filter(author=profile_user).order_by("-pub_date")  # Все посты конкретного пользователя
-    posts_count = posts.count()  # Количество постов
 
     paginator = Paginator(posts, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
+    # Количество постов - paginator.count в шаблоне
+
+    # if Follow.objects.get(user=request.user, author=profile_user):
+    #     following = True
+    # else:
+    #     following = False
+
+    following = False
+    if request.user.is_authenticated:
+        following = request.user.follower.filter(author=profile_user).exists()
 
     return render(request, 'profile.html', {'profile_user': profile_user,
-                                            'posts_count': posts_count,
                                             'page': page,
-                                            'paginator': paginator})
+                                            'paginator': paginator,
+                                            'following': following})
 
 
 def post_view(request, username, post_id):
@@ -98,19 +109,60 @@ def post_edit(request, username, post_id):
     )
 
 
+@login_required
 # view-функция для обработки отправленного комментария (POST)
 def add_comment(request, username, post_id):
     post_owner = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, pk=post_id, author=post_owner)
+    author = get_object_or_404(User, username=request.user.username)
 
     # По идее всегда POST
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.post = post
-        comment.author = request.user
+        comment.author = author
         comment.save()
     return redirect('post', username=username, post_id=post_id)
+
+
+# view-функция страницы, куда будут выведены посты авторов, на которых подписан текущий пользователь.
+@login_required
+def follow_index(request):
+    # posts = []
+    # followings = request.user.follower.all()
+    # followings = Follow.objects.filter(user=request.user)
+    # print(followings)
+    # for follow in followings:
+    #     posts += follow.author.posts
+
+    # f = Follow.objects.filter(user=request.user)
+    # posts = Post.objects.filter(author__following__in=f)
+
+    subs = get_object_or_404(User, username=request.user.username).follower.all()
+    posts = Post.objects.filter(author__in=subs.values_list('author')).order_by('-pub_date')
+
+    paginator = Paginator(posts, 5)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+
+    return render(request, "follow.html", {'page': page,
+                                           'paginator': paginator})
+
+
+@login_required
+def profile_follow(request, username):
+    author = get_object_or_404(User, username=username)
+    if request.user != author and author.following.filter(user=request.user).count() == 0:
+        Follow.objects.create(user=request.user, author=author).save()  # .get_or_create()
+    return redirect('profile', username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    author = get_object_or_404(User, username=username)
+    Follow.objects.get(user=request.user, author=author).delete()
+    return redirect('profile', username=username)
 
 
 def page_not_found(request, exception):
