@@ -47,14 +47,20 @@ def profile(request, username):
     # else:
     #     following = False
 
-    following = False
+    is_follow = False
     if request.user.is_authenticated:
-        following = request.user.follower.filter(author=profile_user).exists()
+        is_follow = request.user.follower.filter(author=profile_user).exists()
+
+    # Считываем количество подписок/подписчиков.
+    followings_count = profile_user.follower.count()
+    followers_count = profile_user.following.count()
 
     return render(request, 'profile.html', {'profile_user': profile_user,
                                             'page': page,
                                             'paginator': paginator,
-                                            'following': following})
+                                            'is_follow': is_follow,
+                                            'followers': followers_count,
+                                            'followings': followings_count})
 
 
 def post_view(request, username, post_id):
@@ -67,11 +73,17 @@ def post_view(request, username, post_id):
 
     form = CommentForm()
 
+    # Считываем количество подписок/подписчиков.
+    followings_count = profile_user.follower.count()
+    followers_count = profile_user.following.count()
+
     return render(request, 'post.html', {'profile_user': profile_user,
                                          'posts_count': posts_count,
                                          'post': post,
                                          'items': comments,
-                                         'form': form})
+                                         'form': form,
+                                         'followers': followers_count,
+                                         'followings': followings_count})
 
 
 @login_required()

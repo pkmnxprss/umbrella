@@ -32,11 +32,11 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <div class="h6 text-muted">
-                            Подписчиков: XXX <br />
-                            Подписан: XXX
+                            Подписчиков: {{ followers }} <br />
+                            Подписан: {{ followings }}
                         </div>
                         {% if profile_user.username != request.user.username %}
-                            {% if following %}
+                            {% if is_follow %}
                                 <a class="btn btn-lg btn-light"
                                    href="{% url 'profile_unfollow' profile_user.username %}" role="button">
                                     Отписаться

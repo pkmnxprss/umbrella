@@ -25,10 +25,11 @@ SECRET_KEY = 'vvg)$3l1&q4oo8v3)eb6wa7-4g5jn&^^kham_)6&bv93uwg8mk'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-        "localhost",
-        "127.0.0.1",
-        "[::1]",
-        "testserver",
+    # '*',
+    "localhost",
+     "127.0.0.1",
+    "[::1]",
+    "testserver",
 ]
 
 # Application definition
