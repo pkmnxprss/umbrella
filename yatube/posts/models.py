@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-# Create your models here.
 
 User = get_user_model()
 
@@ -26,11 +25,10 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='posts', blank=True, null=True,
                               verbose_name='Группа')
-    # поле для картинки
+    # Поле для картинки
     image = models.ImageField(upload_to='posts/', blank=True, null=True)
 
     def __str__(self):
-        # выводим текст поста
         return self.text
 
 
@@ -40,9 +38,6 @@ class Comment(models.Model):
     text = models.TextField()
     created = models.DateTimeField('Дата публикации', auto_now_add=True)
 
-    # В случае, если автор комментария или пост будут удалены — все привязанные
-    # к ним комментарии должны автоматически удаляться.
-    # Реализовано или нет?
     class Meta:
         ordering = ['-created']
 

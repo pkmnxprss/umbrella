@@ -19,15 +19,15 @@ from django.contrib.flatpages import views
 from django.conf.urls import handler404, handler500
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 urlpatterns = [
-    #  регистрация и авторизация
+    # Регистрация и авторизация
     path("auth/", include("users.urls")),
-    #  если нужного шаблона для /auth не нашлось в файле users.urls —
-    #  ищем совпадения в файле django.contrib.auth.urls
+    # Если нужного шаблона для /auth не нашлось в файле users.urls — ищем совпадения в файле django.contrib.auth.urls
     path("auth/", include("django.contrib.auth.urls")),
 
-    #  раздел администратора
+    # Раздел администратора
     path("adminka/", admin.site.urls),
 
     # flatpages
@@ -36,7 +36,12 @@ urlpatterns = [
     path('about-author/', views.flatpage, {'url': '/about-author/'}, name='author'),
     path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='spec'),
 
-    #  Импорт из приложения posts
+    # Импорт url-ов из приложения api
+    path('api/v1/', include('api.urls')),
+    # Документация API
+    path('redoc/', TemplateView.as_view(template_name='redoc.html'), name='redoc'),
+
+    # Импорт url-ов из приложения posts
     path("", include("posts.urls")),
 ]
 
@@ -44,9 +49,8 @@ handler404 = "posts.views.page_not_found"  # noqa
 handler500 = "posts.views.server_error"  # noqa
 
 
-# Мы добавляем возможность загрузки файлов пользователями, а значит,
-# эти файлы должны быть доступны для просмотра в режиме разработки.
-# Этот код будет работать, когда ваш сайт в режиме отладки.
+# Мы добавляем возможность загрузки файлов пользователями, а значит, эти файлы должны быть доступны
+# для просмотра в режиме разработки. Этот код будет работать, когда ваш сайт в режиме отладки.
 # Он позволяет обращаться файлам в директории, указанной в MEDIA_ROOT по имени, через префикс MEDIA_URL.
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
