@@ -1,27 +1,20 @@
 from django.contrib import admin
-
-# Register your models here.
-
-from django.contrib import admin
-# Из файла models импортируем модель Post
 from .models import Post
 
 
 class PostAdmin(admin.ModelAdmin):
-    # перечисляем поля, которые должны отображаться в админкею. Перечень свойств модели, которые мы
-    # хотим показать в интерфейсе. Если это свойство не указано — будет отображаться строка
-    # Имя_модели(идентификатор), как было с записью Post(1).
+    # list of model properties that we want to show in the admin interface
     list_display = ("pk", "text", "pub_date", "author")
-    # добавляем интерфейс для поиска по тексту постов.
-    # Перечень полей, по которым будет искать поисковая система.
-    # Форма поиска отображается над списком элементов.
+
+    # interface for searching in the text of posts
     search_fields = ("text",)
-    # добавляем возможность фильтрации по дате. поля, по которым можно фильтровать записи.
-    # Фильтры отображаются справа от списка элементов.
+
+    # ability to filter by date
     list_filter = ("pub_date",)
-    # это свойство сработает для всех колонок: где пусто - там будет эта строка
-    empty_value_display = "-пусто-"
+
+    # this property will work for all empty columns
+    empty_value_display = "-empty-"
 
 
-# при регистрации модели Post источником конфигурации для неё назначаем класс PostAdmin
+# assign the PostAdmin class as a configuration source for Post model
 admin.site.register(Post, PostAdmin)

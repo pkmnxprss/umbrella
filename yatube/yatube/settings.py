@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'vvg)$3l1&q4oo8v3)eb6wa7-4g5jn&^^kham_)6&bv93uwg8mk'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     # '*',
@@ -37,13 +37,8 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'users',
-    'posts',
-    'api',
-
     'django.contrib.sites',
     'django.contrib.flatpages',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,8 +48,11 @@ INSTALLED_APPS = [
 
     'sorl.thumbnail',
     'rest_framework',
-    # 'rest_framework.authtoken',
     'corsheaders',
+
+    'users',
+    'posts',
+    'api',
 ]
 
 
@@ -133,74 +131,61 @@ USE_I18N = True
 
 USE_L10N = True
 
-# Изначально было True
 USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-# Задаём произвольный URL, который будет использоваться для запросов к статическим файлам.
-# Теперь логотип можно будет запросить по адресу sitename.ex**/static/**images/logo.png
+# an arbitrary URL that will be used for requests to static files
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/"),
 ]
 
-# # Задаём адрес директории, куда командой *collectstatic* будет собрана вся статика
-# STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-# Путь к директории для загрузки изображений указывается относительно адреса в параметре
-# конфигурации MEDIA_ROOT, который должен содержать полный путь к директории и не должен
-# совпадать с директорией STATIC_ROOT.
+# path to the directory for downloading images relative to the address in the MEDIA_ROOT
+# must contain the full path to the directory and must not be the same as the STATIC_ROOT directory
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Login
 
 LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "index"
 # LOGOUT_REDIRECT_URL = "index"
 
-
-# Отправка почтовых писем
-
-# Подключаем движок filebased.EmailBackend
+# sending emails. Connect the filebased.EmailBackend engine
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-# Указываем директорию, в которую будут складываться файлы писем
+# specify the directory where the mail files will be stored.
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 
-# Идентификатор текущего сайта
+# ID of the current site
 SITE_ID = 1
 
-# Подключение бэкенда кеширования
+# connecting the caching backend
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 
-# APPEND_SLASH = False
-
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# CORS - разрешение на обработку запросов с другого домена.
+# CORS - permission to process requests from another domain
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/api/.*$'
-
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
 
-    # Подключение аутентификации по JWT-токену.
+    # connecting authentication by JWT token
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
+# JWT configuration settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
 }

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from posts.models import User, Post, Comment, Follow, Group
+from .models import User, Post, Comment, Follow, Group
 
 
 class PostSerializer(serializers.ModelSerializer):

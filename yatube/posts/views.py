@@ -6,52 +6,41 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
 
-# Обратите внимание, что функция render возвращает специальный объект, который должна вернуть view-функция.
-# Частая ошибка — вызывать функцию, но не передать результат ее выполнения в операторе return
 # @cache_page(timeout=20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.order_by("-pub_date").all()
-    paginator = Paginator(post_list, 10)  # показывать по 10 записей на странице.
-    page_number = request.GET.get('page')  # переменная в URL с номером запрошенной страницы
-    page = paginator.get_page(page_number)  # получить записи с нужным смещением
-    return render(request, 'index.html', {'page': page, 'paginator': paginator})
+    paginator = Paginator(post_list, 10)  # show 10 posts per page
+    page_number = request.GET.get('page')  # URL parameter with requested page number
+    page = paginator.get_page(page_number)  # get records with desired offset
+    return render(request, 'index.html', {'page': page,
+                                          'paginator': paginator})
 
 
-# view-функция для страницы сообщества
+# community page view-function
 def group_posts(request, slug):
-    group = get_object_or_404(Group, slug=slug)
-
+    group = get_object_or_404(Group, slug=slug)  # get a group instance by its slug, or throw a 404 error
     posts = group.posts.all().order_by("-pub_date")
-
     paginator = Paginator(posts, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-
-    response = render(request, "group.html", {"group": group,
-                                              "page": page,
-                                              "paginator": paginator})
-    return response
+    return render(request, "group.html", {"group": group,
+                                          "page": page,
+                                          "paginator": paginator})
 
 
 def profile(request, username):
-    profile_user = get_object_or_404(User, username=username)  # Получаем объект <User> из запроса
-    posts = Post.objects.filter(author=profile_user).order_by("-pub_date")  # Все посты конкретного пользователя
-
+    profile_user = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author=profile_user).order_by("-pub_date")  # all posts owned by the user
     paginator = Paginator(posts, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    # Количество постов - paginator.count в шаблоне
-
-    # if Follow.objects.get(user=request.user, author=profile_user):
-    #     following = True
-    # else:
-    #     following = False
-
+    # number of posts - paginator.count in the template
+    # checking subscription to display on the page
     is_follow = False
     if request.user.is_authenticated:
         is_follow = request.user.follower.filter(author=profile_user).exists()
 
-    # Считываем количество подписок/подписчиков.
+    # count the number of subscriptions / subscribers
     followings_count = profile_user.follower.count()
     followers_count = profile_user.following.count()
 
@@ -68,12 +57,10 @@ def post_view(request, username, post_id):
     posts = Post.objects.filter(author=profile_user)
     posts_count = posts.count()
     post = Post.objects.get(id=post_id)
-
-    comments = Comment.objects.filter(post=post)
-
+    comments = Comment.objects.filter(post=post)  # get a queryset of comments for a post
     form = CommentForm()
 
-    # Считываем количество подписок/подписчиков.
+    # count the number of subscriptions / subscribers
     followings_count = profile_user.follower.count()
     followers_count = profile_user.following.count()
 
@@ -88,7 +75,7 @@ def post_view(request, username, post_id):
 
 @login_required()
 def post_new(request):
-    """ Добавить новую запись, если пользователь известен. """
+    """ Add a new post only if the user is known (logged in). """
     if request.method == 'POST':
         form = PostForm(request.POST, files=request.FILES or None)
         if form.is_valid():
@@ -103,7 +90,7 @@ def post_new(request):
 
 @login_required()
 def post_edit(request, username, post_id):
-    """ Редактировать запись, если пользователь известен и является автором поста. """
+    """ Edit the post only if the user is known (logged in) and is the author of the post. """
     user_profile = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, pk=post_id, author=user_profile)
     if request.user != user_profile:
@@ -122,42 +109,29 @@ def post_edit(request, username, post_id):
 
 
 @login_required
-# view-функция для обработки отправленного комментария (POST)
+# view function for processing posted comment (POST method)
 def add_comment(request, username, post_id):
     post_owner = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, pk=post_id, author=post_owner)
     author = get_object_or_404(User, username=request.user.username)
-
-    # По идее всегда POST
+    # In principle, always POST
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
-        comment.post = post
-        comment.author = author
+        comment.post = post  # specify the post to which the comment is added
+        comment.author = author  # specify the author of the comment as the user who sent the request
         comment.save()
     return redirect('post', username=username, post_id=post_id)
 
 
-# view-функция страницы, куда будут выведены посты авторов, на которых подписан текущий пользователь.
+# view-function of the page where will be displayed the posts of the authors to which the current user is subscribed
 @login_required
 def follow_index(request):
-    # posts = []
-    # followings = request.user.follower.all()
-    # followings = Follow.objects.filter(user=request.user)
-    # print(followings)
-    # for follow in followings:
-    #     posts += follow.author.posts
-
-    # f = Follow.objects.filter(user=request.user)
-    # posts = Post.objects.filter(author__following__in=f)
-
     subs = get_object_or_404(User, username=request.user.username).follower.all()
     posts = Post.objects.filter(author__in=subs.values_list('author')).order_by('-pub_date')
-
     paginator = Paginator(posts, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-
     return render(request, "follow.html", {'page': page,
                                            'paginator': paginator})
 
@@ -166,20 +140,21 @@ def follow_index(request):
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user != author and author.following.filter(user=request.user).count() == 0:
-        Follow.objects.create(user=request.user, author=author).save()  # .get_or_create()
+        # here we subscribe the user to another author
+        Follow.objects.create(user=request.user, author=author).save()
     return redirect('profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
+    # here we unsubscribe the user to another author
     Follow.objects.get(user=request.user, author=author).delete()
     return redirect('profile', username=username)
 
 
 def page_not_found(request, exception):
-    # Переменная exception содержит отладочную информацию,
-    # выводить её в шаблон пользовательской страницы 404 мы не станем
+    # exception variable contains debugging info, so we will not display it in the custom 404 page template
     return render(
         request,
         "misc/404.html",

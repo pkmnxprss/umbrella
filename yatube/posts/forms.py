@@ -5,9 +5,7 @@ from .models import Post, Comment
 class PostForm(ModelForm):
     class Meta:
         model = Post
-        fields = ['group', 'text', 'image']
-        # Включение всех полей в форму:
-        # fields = '__all__'
+        fields = ['group', 'text', 'image']  # list of fields included in the form
 
 
 class CommentForm(ModelForm):

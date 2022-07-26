@@ -1,19 +1,11 @@
-from django.shortcuts import render
-
-#  импортируем CreateView, чтобы создать ему наследника
 from django.views.generic import CreateView
 
-#  функция reverse_lazy позволяет получить URL по параметру "name" функции path()
-#  берём, тоже пригодится
+# function allows you to get the URL given the "name" parameter of the path() function
 from django.urls import reverse_lazy
-
-#  импортируем класс формы, чтобы сослаться на неё во view-классе
 from .forms import CreationForm
-
-# Create your views here.
 
 
 class SignUp(CreateView):
     form_class = CreationForm
-    success_url = reverse_lazy("login") #  где login — это параметр "name" в path()
+    success_url = reverse_lazy("login")  # where login is the "name" parameter in path()
     template_name = "signup.html"

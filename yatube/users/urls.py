@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # path() для страницы регистрации нового пользователя
-    # её полный адрес будет auth/signup/, но префикс auth/ обрабатывется в головном urls.py
+    # path for user registration page
+    # full address will be auth/signup/ but the auth/ prefix will be handled in the core urls.py
     path("signup/", views.SignUp.as_view(), name="signup")
 ]

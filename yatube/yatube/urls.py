@@ -22,26 +22,28 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    # Регистрация и авторизация
+    # registration and authorization
     path("auth/", include("users.urls")),
-    # Если нужного шаблона для /auth не нашлось в файле users.urls — ищем совпадения в файле django.contrib.auth.urls
+
+    # if the required template for /auth was not found in the users.urls file,
+    # we look for matches in the django.contrib.auth.urls file
     path("auth/", include("django.contrib.auth.urls")),
 
-    # Раздел администратора
+    # admin section
     path("adminka/", admin.site.urls),
 
     # flatpages
     path('about/', include('django.contrib.flatpages.urls')),
-
     path('about-author/', views.flatpage, {'url': '/about-author/'}, name='author'),
     path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='spec'),
 
-    # Импорт url-ов из приложения api
-    path('api/v1/', include('api.urls')),
-    # Документация API
+    # API Documentation
     path('redoc/', TemplateView.as_view(template_name='redoc.html'), name='redoc'),
 
-    # Импорт url-ов из приложения posts
+    # import urls from api application
+    path('api/v1/', include('api.urls')),
+
+    # import urls from posts application
     path("", include("posts.urls")),
 ]
 
@@ -49,9 +51,8 @@ handler404 = "posts.views.page_not_found"  # noqa
 handler500 = "posts.views.server_error"  # noqa
 
 
-# Мы добавляем возможность загрузки файлов пользователями, а значит, эти файлы должны быть доступны
-# для просмотра в режиме разработки. Этот код будет работать, когда ваш сайт в режиме отладки.
-# Он позволяет обращаться файлам в директории, указанной в MEDIA_ROOT по имени, через префикс MEDIA_URL.
+# We are adding the ability to upload files, which means that these files should be available in development mode.
+# This allows files in the directory specified in MEDIA_ROOT to be accessed by name, via the MEDIA_URL prefix
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
