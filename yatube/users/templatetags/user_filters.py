@@ -1,6 +1,8 @@
-from django import template  # template.Library registers all template tags and filters
+from django import template
 
-register = template.Library()  # add our new filter to them
+# template.Library registers all template tags and filters.
+# So here we can add our new filter to them
+register = template.Library()
 
 
 @register.filter

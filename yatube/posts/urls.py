@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
@@ -9,7 +10,7 @@ urlpatterns = [
 
     path("follow/", views.follow_index, name="follow_index"),
 
-    # the author's username will be used as the address of the author's personal page
+    # The author's username will be used as the address of the author's personal page
     path('<str:username>/', views.profile, name='profile'),
     path('<str:username>/<int:post_id>/', views.post_view, name='post'),
     path('<str:username>/<int:post_id>/edit/', views.post_edit, name='post_edit'),

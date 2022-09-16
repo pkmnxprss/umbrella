@@ -1,7 +1,7 @@
 from django.views.generic import CreateView
-
-# function allows you to get the URL given the "name" parameter of the path() function
+# Function allows you to get the URL given the "name" parameter of the path() function
 from django.urls import reverse_lazy
+
 from .forms import CreationForm
 
 

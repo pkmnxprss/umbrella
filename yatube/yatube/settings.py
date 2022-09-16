@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from local .env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'vvg)$3l1&q4oo8v3)eb6wa7-4g5jn&^^kham_)6&bv93uwg8mk'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -149,8 +152,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/"),
 ]
 
-# path to the directory for downloading images relative to the address in the MEDIA_ROOT
-# must contain the full path to the directory and must not be the same as the STATIC_ROOT directory
+# Path to the directory for downloading images relative to the address in the MEDIA_ROOT.
+# It must contain the full path to the directory and must not be the same as the STATIC_ROOT directory
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -159,15 +162,15 @@ LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "index"
 # LOGOUT_REDIRECT_URL = "index"
 
-# sending emails. Connect the filebased.EmailBackend engine
+# Sending emails. Connect the filebased.EmailBackend engine
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-# specify the directory where the mail files will be stored.
+# Specify the directory where the mail files will be stored
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 
 # ID of the current site
 SITE_ID = 1
 
-# connecting the caching backend
+# Connecting the caching backend
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -183,7 +186,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 
-    # connecting authentication by JWT token
+    # Connecting authentication by JWT token
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

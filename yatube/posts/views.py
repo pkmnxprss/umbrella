@@ -1,9 +1,10 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Post, Group, User, Comment, Follow
-from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
+
+from .models import Post, Group, User, Comment, Follow
+from .forms import PostForm, CommentForm
 
 
 # @cache_page(timeout=20, key_prefix='index_page')
@@ -16,7 +17,7 @@ def index(request):
                                           'paginator': paginator})
 
 
-# community page view-function
+# Community page view-function
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)  # get a group instance by its slug, or throw a 404 error
     posts = group.posts.all().order_by("-pub_date")
@@ -34,13 +35,13 @@ def profile(request, username):
     paginator = Paginator(posts, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    # number of posts - paginator.count in the template
-    # checking subscription to display on the page
+    # Number of posts - paginator.count in the template.
+    # Checking subscription to display on the page
     is_follow = False
     if request.user.is_authenticated:
         is_follow = request.user.follower.filter(author=profile_user).exists()
 
-    # count the number of subscriptions / subscribers
+    # Count the number of subscriptions / subscribers
     followings_count = profile_user.follower.count()
     followers_count = profile_user.following.count()
 
@@ -60,7 +61,7 @@ def post_view(request, username, post_id):
     comments = Comment.objects.filter(post=post)  # get a queryset of comments for a post
     form = CommentForm()
 
-    # count the number of subscriptions / subscribers
+    # Count the number of subscriptions / subscribers
     followings_count = profile_user.follower.count()
     followers_count = profile_user.following.count()
 
@@ -109,7 +110,7 @@ def post_edit(request, username, post_id):
 
 
 @login_required
-# view function for processing posted comment (POST method)
+# View function for processing posted comment (POST method)
 def add_comment(request, username, post_id):
     post_owner = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, pk=post_id, author=post_owner)
@@ -124,7 +125,7 @@ def add_comment(request, username, post_id):
     return redirect('post', username=username, post_id=post_id)
 
 
-# view-function of the page where will be displayed the posts of the authors to which the current user is subscribed
+# View-function of the page where will be displayed the posts of the authors to which the current user is subscribed
 @login_required
 def follow_index(request):
     subs = get_object_or_404(User, username=request.user.username).follower.all()
@@ -140,7 +141,7 @@ def follow_index(request):
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user != author and author.following.filter(user=request.user).count() == 0:
-        # here we subscribe the user to another author
+        # Here we subscribe the user to another author
         Follow.objects.create(user=request.user, author=author).save()
     return redirect('profile', username=username)
 
@@ -148,13 +149,13 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    # here we unsubscribe the user to another author
+    # Here we unsubscribe the user to another author
     Follow.objects.get(user=request.user, author=author).delete()
     return redirect('profile', username=username)
 
 
 def page_not_found(request, exception):
-    # exception variable contains debugging info, so we will not display it in the custom 404 page template
+    # Exception variable contains debugging info, so we will not display it in the custom 404 page template
     return render(
         request,
         "misc/404.html",

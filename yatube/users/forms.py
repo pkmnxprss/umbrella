@@ -5,10 +5,10 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-#  create our own class for the registration form (inheritor of the predefined UserCreationForm class)
+# Create our own class for the registration form (inheritor of the predefined UserCreationForm class)
 class CreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User  # model that the created form is associated with
 
-        # fields that should be visible in the form and their order
+        # Fields that should be visible in the form and their order
         fields = ("first_name", "last_name", "username", "email")

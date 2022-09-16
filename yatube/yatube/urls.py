@@ -22,17 +22,17 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    # registration and authorization
+    # Registration and authorization
     path("auth/", include("users.urls")),
 
-    # if the required template for /auth was not found in the users.urls file,
+    # If the required template for /auth was not found in the users.urls file,
     # we look for matches in the django.contrib.auth.urls file
     path("auth/", include("django.contrib.auth.urls")),
 
-    # admin section
+    # Admin section
     path("adminka/", admin.site.urls),
 
-    # flatpages
+    # Flatpages
     path('about/', include('django.contrib.flatpages.urls')),
     path('about-author/', views.flatpage, {'url': '/about-author/'}, name='author'),
     path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='spec'),
@@ -40,10 +40,10 @@ urlpatterns = [
     # API Documentation
     path('redoc/', TemplateView.as_view(template_name='redoc.html'), name='redoc'),
 
-    # import urls from api application
+    # Import urls from api application
     path('api/v1/', include('api.urls')),
 
-    # import urls from posts application
+    # Import urls from posts application
     path("", include("posts.urls")),
 ]
 
