@@ -1,7 +1,7 @@
 """yatube URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/2.2/topics/http/urls/
+    https://docs.djangoproject.com/en/4.1/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -49,7 +49,6 @@ urlpatterns = [
 
 handler404 = "posts.views.page_not_found"  # noqa
 handler500 = "posts.views.server_error"  # noqa
-
 
 # We are adding the ability to upload files, which means that these files should be available in development mode.
 # This allows files in the directory specified in MEDIA_ROOT to be accessed by name, via the MEDIA_URL prefix
