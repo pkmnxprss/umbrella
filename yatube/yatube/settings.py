@@ -142,6 +142,8 @@ USE_TZ = False  # by default True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# AUTH_USER_MODEL = 'users.User'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -160,7 +162,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "index"
-# LOGOUT_REDIRECT_URL = "index"
+LOGOUT_REDIRECT_URL = "index"
 
 # Sending emails. Connect the filebased.EmailBackend engine
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
