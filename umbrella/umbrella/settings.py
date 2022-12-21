@@ -153,9 +153,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # An arbitrary URL that will be used for requests to static files
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static/"),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static/"),
+# ]
+
+STATIC_ROOT = f"{BASE_DIR}/static/"
 
 # Path to the directory for downloading images relative to the address in the MEDIA_ROOT.
 # It must contain the full path to the directory and must not be the same as the STATIC_ROOT directory
