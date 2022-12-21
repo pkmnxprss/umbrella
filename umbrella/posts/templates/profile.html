@@ -1,0 +1,76 @@
+<!--Шаблон страницы профайла-->
+
+<!--Пока что на ней будет отображаться информация об авторе и его посты.-->
+
+<!--Обычно backend-разработчик берет готовый HTML-код либо комбинирует части существующих шаблонов. -->
+<!--Сейчас ваша задача — превратить статичный HTML-код в динамический шаблон.-->
+
+<!--В этом фрагменте HTML-кода выводятся посты определённого пользователя и информация о нём. -->
+<!--Этот блок content должен встраиваться в базовый шаблон base.html -->
+<!--{# {% extends "file_name.html" %} #} -->
+
+<!--Комментарии в коде показывают, где статические данные нужно заменить на переменные.-->
+
+{% extends "base.html" %}
+{% block title %}Профиль пользователя{% endblock %}
+{% block content %}
+
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md-3 mb-3 mt-1">
+            <div class="card">
+                <div class="card-body">
+                    <div class="h2">
+                        <!-- Имя автора -->
+                        {{ profile_user.first_name }} {{ profile_user.last_name }}
+                    </div>
+                    <div class="h3 text" style="font-weight: bold">
+                        <!-- username автора -->
+                        @{{ profile_user.username }}
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div class="h6 text">
+                            Подписчиков: {{ followers }} <br />
+                            Подписан: {{ followings }}
+                        </div>
+                        {% if profile_user.username != request.user.username %}
+                            {% if is_follow %}
+                                <a class="btn btn-lg btn-light"
+                                   href="{% url 'profile_unfollow' profile_user.username %}" role="button">
+                                    Отписаться
+                                </a>
+                            {% else %}
+                                <a class="btn btn-lg btn-primary"
+                                   href="{% url 'profile_follow' profile_user.username %}" role="button">
+                                    Подписаться
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item">
+                        <div class="h6 text">
+                            <!-- Количество записей -->
+                            Записей: {{ paginator.count }}
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+
+            {% for post in page %}
+                <!-- Начало блока с отдельным постом -->
+                {% include "post_item.html" with post=post %}
+            {% endfor %}
+
+            <!-- Здесь постраничная навигация паджинатора -->
+            {% if page.has_other_pages %}
+                {% include "paginator.html" with items=page paginator=paginator %}
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

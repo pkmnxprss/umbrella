@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Page{% endblock %} | Umbrella</title>
+    <!-- Загрузка статики -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
+    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <!--    Enable Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&family=Unbounded:wght@300&family=Rubik+Glitch&family=Rubik+80s+Fade&display=swap"
+          rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik+80s+Fade&family=Rubik+Glitch&family=Unbounded:wght@300&family=Montserrat:wght@400&display=swap');
+        body {
+            background-color: black;
+            font-family: 'Montserrat', sans-serif;
+        }
+        h1 {
+            font-family: 'Rubik Glitch', cursive;
+            font-size: 40px;
+            color:white;
+        }
+        .navbar-brand {
+            font-family: 'Rubik 80s Fade', cursive;
+        }
+        .p-2 {
+            font-family: 'Unbounded', cursive;
+        }
+        .pagination {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .card-header {
+            font-family: 'Unbounded', cursive;
+        }
+    </style>
+    <!--    End of Google Fonts connecting -->
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <main>
+        <div class="container" style="margin-top:10px">
+            {% block content %}
+            <!-- Содержимое страницы -->
+            {% endblock content %}
+        </div>
+    </main>
+    {% include 'footer.html' %}
+</body>
+</html>
