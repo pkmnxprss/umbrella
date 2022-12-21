@@ -30,7 +30,7 @@ SECRET_KEY = 'NCGC-3WCTY8T5C8-GNTGGX4G4-IGF'  # Random for dev: NCGC-3WCTY8T5C8-
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    # '*',
+    '*',
     "localhost",
     "127.0.0.1",
     "[::1]",
